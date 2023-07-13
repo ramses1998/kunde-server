@@ -296,14 +296,6 @@ public class KundeController {
         return ok().body(kunde.get());
     }
 
-//    @GetMapping
-//    ResponseEntity<List<Kunde>> findByNachname(@RequestParam final String nachname) {
-//        final var kunde = KUNDEN.stream()
-//                .filter(k -> Objects.equals(k.getNachname(), nachname))
-//                .collect(Collectors.toList());
-//        return ok().body(kunde);
-//    }
-
     @PostMapping
     ResponseEntity<Void> create(
             @RequestBody final KundeDTO kundeDTO
@@ -324,67 +316,15 @@ public class KundeController {
             @RequestBody final KundeDTO kundeDTO) {
         log.info("InputKundeDTO= {}", kundeDTO);
 
-        KUNDEN = KUNDEN.stream()
-                .filter(k -> !Objects.equals(k.getId(), id))
-                .collect(Collectors.toList());
-
         final var neuerKunde = kundeDTO.toKunde();
         neuerKunde.setId(id);
-        var adresse = kundeDTO.adresse().toAdresse();
-        adresse.setId(
-                ADRESSEN.stream()
-                        .filter(a ->
-                                Objects.equals(a.getOrt(), kundeDTO.adresse().ort()) &&
-                                        Objects.equals(a.getPlz(), kundeDTO.adresse().plz())
-                        )
-                        .findFirst().get().getId()
-        );
-        neuerKunde.setAdresse(adresse);
+
+        KUNDEN = KUNDEN
+                .stream()
+                .map(k -> Objects.equals(k.getId(), id) ? neuerKunde : k)
+                .collect(Collectors.toList());
+
         log.info("Updated Kunde= {}", neuerKunde);
-
-        var index = 0;
-
-        for (int i = 0; i < KUNDEN.size(); i++) {
-            if (Objects.equals(KUNDEN.get(i).getId(), id)) {
-                index = i;
-            }
-        }
-
-        KUNDEN.add(neuerKunde);
-
-//        for (int i = 0; i < KUNDEN.size(); i++) {
-//            if (Objects.equals(KUNDEN.get(i).getId(), id)) {
-//                final var neuerKunde = kundeDTO.toKunde();
-//                neuerKunde.setId(id);
-//                var adresse = kundeDTO.adresse().toAdresse();
-//                adresse.setId(UUID.fromString("5959e734-54cf-4c24-a25b-b5c0d4fcacdc"));
-//                neuerKunde.setAdresse(adresse);
-//                log.info("Updated Kunde= {}", neuerKunde);
-//                log.info("Index= {}", i);
-//                KUNDEN.set(i, neuerKunde);
-//            }
-//        }
-
-
-//        KUNDEN = KUNDEN.stream().map(k -> {
-//            if (Objects.equals(k.getId(), id)) {
-//                final var neuerKunde = kundeDTO.toKunde();
-//                neuerKunde.setId(k.getId());
-//                var adresse = kundeDTO.adresse().toAdresse();
-//                adresse.setId(
-//                        ADRESSEN.stream()
-//                                .filter(a ->
-//                                        Objects.equals(a.getOrt(), kundeDTO.adresse().ort()) &&
-//                                        Objects.equals(a.getPlz(), kundeDTO.adresse().plz())
-//                                )
-//                                .findFirst().get().getId()
-//                );
-//                neuerKunde.setAdresse(adresse);
-//                log.info("Updated Kunde= {}", neuerKunde);
-//                return neuerKunde;
-//            }
-//            return k;
-//        }).collect(Collectors.toList());
     }
 
     @DeleteMapping(path = "/{id}")
